@@ -140,6 +140,8 @@ class DMCGUI:
             self.sim.reset()
         
         # สุ่ม address
+        # Generate a list of random addresses in the range [0, 255]
+        # The number of addresses is determined by the user input (nacc)
         self.address_list = [random.randint(0, 255) for _ in range(nacc)]
         self.current_step = 0
         
@@ -185,6 +187,9 @@ class DMCGUI:
             self.text_result.insert(tk.END, "  => MISS\n")
         self.text_result.insert(tk.END, f"  Hit={stats['hit_count']} Miss={stats['miss_count']} (Hit Rate={stats['hit_rate']:.3f})\n\n")
         
+        # Scroll to the bottom of the step log
+        self.text_result.see(tk.END)
+        
         # อัปเดตตาราง
         self.update_cache_lines_table()
         self.update_access_log_table()
@@ -229,6 +234,10 @@ class DMCGUI:
             tag_hex = f"{tag:X}"
             hm_str = "HIT" if is_hit else "MISS"
             self.tree_log.insert("", "end", values=(i, addr_hex, offset, index, tag_hex, hm_str))
+        
+        # Scroll to the bottom of the access log
+        if self.tree_log.get_children():
+            self.tree_log.yview_moveto(1.0)
     
     def start_auto_run(self):
         """กดปุ่ม Auto Run แล้วให้รันอัตโนมัติจนจบ หรือจนกด Stop"""
