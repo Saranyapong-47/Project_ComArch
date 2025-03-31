@@ -59,6 +59,10 @@ class DMCGUI:
         self.btn_stop = tk.Button(frame_buttons, text="Stop", command=self.stop_run, state="disabled")
         self.btn_stop.pack(side="left", padx=5)
         
+        # ปุ่ม Reset (ใหม่)
+        self.btn_reset = tk.Button(frame_buttons, text="Reset", command=self.reset_simulation, state="disabled")
+        self.btn_reset.pack(side="left", padx=5)
+        
         # -- Frame กลาง: Text + ตาราง
         frame_center = tk.Frame(self.root)
         frame_center.pack(padx=10, pady=10, fill="both", expand=True)
@@ -121,8 +125,8 @@ class DMCGUI:
             csize = int(self.var_cache_size.get())
             bsize = int(self.var_block_size.get())
             nacc = int(self.var_num_access.get())
-            if csize <= 0 or bsize <= 0 or nacc <= 0:
-                raise ValueError("ต้องเป็นจำนวนบวกเท่านั้น")
+            if csize <= 0 or bsize <= 0 or nacc <= 0 or csize < bsize:
+                raise ValueError("Invalid parameters. Ensure cache_size > 0, block_size > 0, number_of_accesses > 0, and cache_size >= block_size.")
         except ValueError as e:
             messagebox.showerror("Error", f"Input Error: {e}")
             return
@@ -160,6 +164,7 @@ class DMCGUI:
         self.btn_auto_run.config(state="normal")
         self.btn_run_all.config(state="normal")
         self.btn_stop.config(state="disabled")  # ยังไม่ต้อง stop จนกว่าจะ auto run
+        self.btn_reset.config(state="normal")
     
     def do_next_step(self):
         """ทำทีละ 1 Step (Access 1 ครั้ง)"""
@@ -290,3 +295,25 @@ class DMCGUI:
             # ถ้า do_next_step ทำจบแล้วจะ break ออก
             if self.current_step >= len(self.address_list):
                 break
+    
+    def reset_simulation(self):
+        """รีเซ็ต simulation และล้างข้อมูลทั้งหมด"""
+        if self.sim:
+            self.sim.reset()
+        self.address_list = []
+        self.current_step = 0
+        self.auto_running = False
+        
+        # ล้างข้อความและตาราง
+        self.text_result.delete("1.0", tk.END)
+        self.update_cache_lines_table()
+        self.update_access_log_table()
+        
+        # ปิดปุ่มควบคุม
+        self.btn_next_step.config(state="disabled")
+        self.btn_auto_run.config(state="disabled")
+        self.btn_run_all.config(state="disabled")
+        self.btn_stop.config(state="disabled")
+        self.btn_reset.config(state="disabled")
+        
+        self.text_result.insert(tk.END, "Simulation reset.\n")
