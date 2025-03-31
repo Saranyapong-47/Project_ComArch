@@ -11,6 +11,8 @@ class DMCLine:
 # -------------------------------------------------
 class DirectMappedCache:
     def __init__(self, cache_size, block_size, address_bits=32):
+        if cache_size <= 0 or block_size <= 0 or cache_size < block_size:
+            raise ValueError("Invalid cache or block size. Ensure cache_size > 0, block_size > 0, and cache_size >= block_size.")
         self.cache_size = cache_size
         self.block_size = block_size
         self.address_bits = address_bits
@@ -43,6 +45,10 @@ class DirectMappedCache:
         offset = address & offset_mask
         index = (address >> self.offset_bits) & index_mask
         tag = address >> (self.offset_bits + self.index_bits)
+        
+        # Ensure index is within bounds
+        if index >= self.num_lines:
+            raise IndexError(f"Calculated index {index} is out of bounds for cache lines (0 to {self.num_lines - 1}).")
         
         line = self.lines[index]
         
